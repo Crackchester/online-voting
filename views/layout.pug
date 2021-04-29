@@ -1,0 +1,57 @@
+doctype html
+html
+    head
+        title= title
+        meta(http-equiv='X-UA-Compatible' content='IE=edge')
+        meta(http-equiv='Content-Type' content='text/html;charset=utf-8')
+        meta(charset='utf-8')
+        meta(name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no')
+
+        link(rel='stylesheet', href='https://stackpath.bootstrapcdn.com/bootswatch/4.4.1/darkly/bootstrap.min.css')
+
+        script(src="https://kit.fontawesome.com/6ad9b2d16e.js" crossorigin="anonymous")
+
+        script(src="https://cdn.jsdelivr.net/npm/js-cookie@beta/dist/js.cookie.min.js")
+        script(src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous")
+        script(src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous")
+        script(src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous")
+
+        style.
+            /* width */
+            ::-webkit-scrollbar {
+                width: 10px;
+            }
+
+            /* Track */
+            ::-webkit-scrollbar-track {
+                background: #f1f1f1;
+            }
+
+            /* Handle */
+            ::-webkit-scrollbar-thumb {
+                background: #888;
+            }
+
+            /* Handle on hover */
+            ::-webkit-scrollbar-thumb:hover {
+                background: #555;
+            }
+            body {
+                font-family: 'Raleway', sans-serif;
+                height: 100vh;
+            }
+            h1 h2 h3 h4 h5 {
+                font-family: 'Montserrat', sans-serif;
+            }
+
+        block head
+
+
+    body
+        .text-center
+            img.mt-5.ml-3.mb-3(src='/images/logo.png' style='height: 100px; width: auto')
+            p.text-muted If you experience any issues, please email <a href='mailto:crackchestermcr@gmail.com'>crackchestermcr@gmail.com</a>.
+            p.text-muted This site uses cookies to authenticate you as a voter. We do not share any data with 3rd parties.
+            p.text-muted If you have any questions or concerns please use the email address above.
+        .container
+            block content

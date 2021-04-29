@@ -1,0 +1,10 @@
+extends layout
+
+block content
+    .text-center
+        h1.display-4.mb-3 Email Sent
+        p Click the verification link sent to your email
+        p Didn't receive the email? Resend it by clicking the link below:
+        form(action='/resendEmail' method='post')
+            input(type='email' name='email' value=`${email}` hidden)
+            button.btn.btn-outline-success(type='submit') Resend Confirmation

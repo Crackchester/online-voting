@@ -1,0 +1,38 @@
+extends layout
+
+block content
+    .text-center.mb-5
+        h1.display-4 There are #{positions.length} positions to vote on.
+        small.text-muted A tick will appear beside a position if you have voted on that position. Click on a position to vote
+
+    .row
+        .col-lg-6.offset-lg-3
+            if err
+                .alert.alert-dismissible.alert-danger.text-center
+                    button.close(type="button" data-dismiss="alert") &times;
+                    span #{err}
+            .list-group
+            each position in positions
+                a.list-group-item.list-group-item-action.d-flex.justify-content-between.align-items-center(href=`/vote/${voter.uuid}/${position}`) #{position}
+                    if alreadyVotedOn.includes(position)
+                        span.badge.badge-success.badge-pill
+                            i.fas.fa-check
+
+    .text-center.pt-4
+        a.btn.btn-primary.text-center(onclick='confirmChoices()') Confirm Choices
+        a#submission(href=`/submit/${voter.uuid}` hidden)
+
+    script const votedAll = #{alreadyVotedOn.length === positions.length}
+    script.
+        const confirmChoices = () => {
+            let message;
+            if (!votedAll) {
+                message = "You have not finished voting, please submit a choice for every position.";
+                window.alert(message);
+            }
+            else {
+                message = "Are you sure you want to submit your vote?\nYou will not be able to edit it later."
+                if (window.confirm(message))
+                    document.getElementById('submission').click();
+            }
+        }

@@ -1,0 +1,22 @@
+extends layout
+
+block content
+    h1.display-4.mb-3.text-center Register to Vote
+    .row.pt-4
+        .col-sm-8.offset-sm-2
+            if err
+                .alert.alert-dismissible.alert-danger.text-center
+                    button.close(type="button" data-dismiss="alert") &times;
+                    span #{err}
+                    if resendEmail
+                        form(action='/resendEmail' method='post')
+                            input(type='email' name='email' value=`${resendEmail}` hidden)
+                            button.btn.btn-link.text-success(type='submit') Resend Confirmation
+            form(action="/register", method="post")
+                fieldset
+                    .form-group.text-center
+                        input.form-control#email(type='email' name='email' aria-describedby='emailHelp' placeholder='Enter Email' value=email)
+                        small.form-text.text-muted#emailHelp We'll never share your email with anyone else. It is kept anonymous.
+                    .row
+                        .col-4.offset-4.text-center
+                            button.btn.btn-outline-success.px-4(type='submit') Register

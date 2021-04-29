@@ -1,0 +1,24 @@
+extends layout
+
+block content
+    .text-center
+        h1.display-4 Voting on #{position}
+
+    .row.pt-4
+        .col-lg-4.offset-lg-1
+            .list-group#list-tab(role='tablist')
+                each candidate in candidates
+                    a.list-group-item.list-group-item-action.d-flex.justify-content-between.align-items-center(
+                        id=`${candidate._id}-list` data-toggle='list' href=`#id-${candidate._id}` role='tab') #{candidate.name}
+                        if alreadyVotedOn.toString() === candidate._id.toString()
+                            span.badge.badge-success.badge-pill
+                                i.fas.fa-check
+        .col-lg-6
+            .tab-content#nav-tabContent
+                each candidate in candidates
+                    .tab-pane.fade(id=`id-${candidate._id}` role='tabpanel')
+                        .card.text-center
+                            .card-body
+                                h3.card-title #{candidate.name}'s Manifesto
+                                p.card-text #{candidate.manifesto}
+                                a.card-link(href=`${position}/${candidate._id}`) Vote for #{candidate.name}

@@ -1,0 +1,7 @@
+extends layout
+
+block content
+    .text-center
+        h1.display-4 No candidates for the position of #{position}
+        .pt-5
+            a(href=`/vote/${voter.uuid}`) Return to Home
