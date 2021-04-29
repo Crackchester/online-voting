@@ -1,6 +1,10 @@
 module.exports = [
+	"President",
+	"Vice President",
+	"General Secretary",
+	"Treasurer",
 	"Events Officer",
 	"Dev Officer",
-	"Content Manager",
-	"Social Media & PR Officer"
+	"Graphics Officer",
+	"Outreach Officer"
 ]
