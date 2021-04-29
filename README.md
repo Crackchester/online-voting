@@ -1,4 +1,5 @@
 # CAOS AGM Online Voting Platform
+By Ryan Harrison
 
 `npm install`
 
