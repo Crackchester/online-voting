@@ -48,6 +48,8 @@ services:
             - NODE_ENV=production
         volumes:
             - ${PWD}/nodeapp:/app
+        networks:
+            proxy-bridge-internal: {}
         ports:
             - 3000:3000
         depends_on: 
