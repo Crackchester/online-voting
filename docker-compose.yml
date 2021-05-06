@@ -34,7 +34,7 @@ services:
         volumes:
             - /etc/letsencrypt/live/crackchester.cc/fullchain.pem:/certs/cert.crt:ro
             - /etc/letsencrypt/live/crackchester.cc/privkey.pem:/certs/cert.key:ro
-            - /etc/keys/mail.private:/etc/opendkim/dkim.key
+            - ${PWD}/../dkim-keys/mail.private:/etc/opendkim/dkim.key
         networks:
             - proxy-bridge-internal
             - proxy-bridge-external
@@ -42,13 +42,12 @@ services:
             - traefik.enable=false
 
     web:
-        image: node
-        user: node
-        working_dir: /home/node/app
+        build: ${PWD}/nodeapp
+        image: online-voting:latest
         environment:
             - NODE_ENV=production
         volumes:
-            - ${PWD}/nodeapp:/home/node/app
+            - ${PWD}/nodeapp:/app
         ports:
             - 3000:3000
         depends_on: 
