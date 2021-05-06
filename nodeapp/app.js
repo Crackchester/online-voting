@@ -1,11 +1,10 @@
-const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const mongoose = require('mongoose');
 const session = require('express-session');
-const uuid = require('uuid/v4');
+const {v4: uuid} = require('uuid');
 const Voter = require('./models/Voter');
 const Candidate = require('./models/Candidate');
 const positions = require('./models/positions');
@@ -104,7 +103,10 @@ app.use('/createTestDatabase', (req, res) => {
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
-  next(createError(404));
+  next({
+    message: "Could not find the resource you were looking for",
+    status: 404
+  })
 });
 
 // error handler

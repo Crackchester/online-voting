@@ -2,13 +2,12 @@ const express = require('express');
 const router = express.Router();
 const validator = require('validator');
 const crypto = require('crypto');
-const uuid = require('uuid/v4');
+const {v4: uuid} = require('uuid');
 const Candidate = require('../models/Candidate');
 const Vote = require('../models/Vote');
 const Voter = require('../models/Voter');
 const positions = require('../models/positions');
 const {ensureUUIDValid, forwardAuthenticated} = require('../config/auth');
-const createError = require('http-errors');
 const nodemailer = require('nodemailer');
 
 router.get('/', forwardAuthenticated, (req, res) => {
@@ -34,7 +33,10 @@ router.get('/vote/:UUID', ensureUUIDValid, (req, res) => {
 router.get('/vote/:UUID/:position', ensureUUIDValid, (req, res, next) => {
     // Does position exist
     if (!positions.includes(req.params.position)) {
-        next(createError(404));
+        next({
+            message: "Could not find the resource you were looking for",
+            status: 404
+          });
         return
     }
     let alreadyVotedOn = '';
@@ -63,7 +65,10 @@ router.get('/vote/:UUID/:position/:candidate', ensureUUIDValid, (req, res, next)
                 if (err) {
                     console.error(`Error at GET /vote/${req.params.UUID}/${req.params.position}/${req.params.candidate}:`);
                     console.error(err);
-                    next(createError(500));
+                    next({
+                        message: "Something went wrong... see logs",
+                        status: 500
+                    });
                 } else if (results.n === 0) {
                     // Create new vote and save
                     let newVote = new Vote({
@@ -73,7 +78,10 @@ router.get('/vote/:UUID/:position/:candidate', ensureUUIDValid, (req, res, next)
                     });
                     newVote.save(err => {
                         if (err) {
-                            next(createError(500));
+                            next({
+                                message: "Something went wrong... see logs",
+                                status: 500
+                            });
                         } else
                             res.render('voted', {candidate, position: req.params.position});
                     });
@@ -81,7 +89,10 @@ router.get('/vote/:UUID/:position/:candidate', ensureUUIDValid, (req, res, next)
                     res.render('voted', {candidate, position: req.params.position});
             });
         } else {
-            next(createError(404));
+            next({
+                message: "Could not find the resource you were looking for",
+                status: 404
+              });
         }
     });
 });
@@ -94,7 +105,10 @@ router.get('/submit/:UUID', ensureUUIDValid, (req, res, next) => {
         if (err || !votes) {
             console.error(`Error at GET /submit/${req.params.UUID}:`);
             console.error(err);
-            next(createError(500));
+            next({
+                message: "Something went wrong... see logs",
+                status: 500
+            });
         } else if (votes.length < positions.length) {
             let alreadyVotedOn = [];
             for (let i = 0; i < votes.length; i++) {
@@ -105,7 +119,10 @@ router.get('/submit/:UUID', ensureUUIDValid, (req, res, next) => {
             // If they have submitted all votes then mark as submitted
             Voter.updateOne({uuid: req.params.UUID}, {votesConfirmed: true}, err => {
                 if (err) {
-                    next(createError(500));
+                    next({
+                        message: "Something went wrong... see logs",
+                        status: 500
+                    });
                 } else
                     res.render('submitSuccessful');
             });
