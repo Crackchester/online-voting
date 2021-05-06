@@ -1,0 +1,90 @@
+version: '3'
+
+services:
+    reverse-proxy:
+        image: traefik:v2.3
+        restart: always
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - ${PWD}/traefik.yml:/etc/traefik/traefik.yml:ro
+            - ${PWD}/traefik-dynamic.yml:/etc/traefik/traefik-dynamic.yml:ro
+            - /etc/letsencrypt/live/crackchester.cc/fullchain.pem:/etc/traefik/certs/cert.crt:ro
+            - /etc/letsencrypt/live/crackchester.cc/privkey.pem:/etc/traefik/certs/cert.key:ro
+        networks:
+            proxy-bridge-external: {}
+            proxy-bridge-internal: {}
+
+    email:
+        image: freinet/postfix-relay
+        restart: always
+        container_name: postfix
+        ports:
+            - "25:25"
+        environment:
+            - MAILNAME=crackchester.cc
+            - USE_TLS=yes
+            - TLS_SECURITY_LEVEL=encrypt
+            - TLS_KEY=/certs/cert.key
+            - TLS_CRT=/certs/cert.crt
+            - USE_DKIM=yes
+            - DKIM_DOMAINS=crackchester.cc
+        volumes:
+            - /etc/letsencrypt/live/crackchester.cc/fullchain.pem:/certs/cert.crt:ro
+            - /etc/letsencrypt/live/crackchester.cc/privkey.pem:/certs/cert.key:ro
+            - /etc/keys/mail.private:/etc/opendkim/dkim.key
+        networks:
+            - proxy-bridge-internal
+            - proxy-bridge-external
+        labels:
+            - traefik.enable=false
+
+    web:
+        image: node
+        user: node
+        working_dir: /home/node/app
+        environment:
+            - NODE_ENV=production
+        volumes:
+            - ${PWD}/nodeapp:/home/node/app
+        ports:
+            - 3000:3000
+        depends_on: 
+            - email
+        labels:
+            - traefik.http.services.web.loadbalancer.server.port=3000
+            - traefik.http.routers.web.rule=Host(`elections.crachester.cc`) || Host(`localhost`)
+            - traefik.http.routers.web.tls=true
+            - traefik.http.routers.web.entrypoints=websecure
+            - traefik.http.routers.web.service=web
+    
+    portainer:
+        image: portainer/portainer-ce
+        ports:
+            - 9000:9000
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - portainer-data:/data
+        labels:
+            - traefik.enable=false
+        restart: always
+        container_name: portainer
+        networks:
+            - proxy-bridge-external
+            - proxy-bridge-internal
+
+
+
+networks:
+    proxy-bridge-external:
+        name: proxy-bridge-external
+    proxy-bridge-internal:
+        name: proxy-bridge-internal
+        internal: true
+
+
+volumes:
+    portainer-data:
+        name: portainer-data

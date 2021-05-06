@@ -9,20 +9,7 @@ const Voter = require('../models/Voter');
 const positions = require('../models/positions');
 const {ensureUUIDValid, forwardAuthenticated} = require('../config/auth');
 const createError = require('http-errors');
-const emailClientID = process.env.emailClientID || require('../config/keys').emailClientID;
-const emailClientSecret = process.env.emailClientSecret || require('../config/keys').emailClientSecret;
-const emailRefreshToken = process.env.emailRefreshToken || require('../config/keys').emailRefreshToken;
 const nodemailer = require('nodemailer');
-const { google } = require('googleapis');
-const OAuth2 = google.auth.OAuth2;
-const oauth2Client = new OAuth2(
-    emailClientID,
-    emailClientSecret,
-    "https://developers.google.com/oauthplayground"
-);
-oauth2Client.setCredentials({
-    refresh_token: emailRefreshToken,
-});
 
 router.get('/', forwardAuthenticated, (req, res) => {
     res.redirect('/register');
@@ -236,20 +223,21 @@ router.get('/confirmEmail/:UUID', forwardAuthenticated, (req, res) => {
 
 
 let sendEmail = (email, voter, hostname) => {
-    const accessToken = oauth2Client.getAccessToken();
     const smtpTransport = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-            type: "OAuth2",
-            user: "crackchestermcr@gmail.com",
-            clientId: emailClientID,
-            clientSecret: emailClientSecret,
-            refreshToken: emailRefreshToken,
-            accessToken
-        }
+        host: "postfix",
+        port: 25,
+        secure: false
     });
+
+    smtpTransport.verify(function(error, success) {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Email server is ready to take our messages");
+        }
+      });
     const emailOptions = {
-        from: "crackchestermcr@gmail.com",
+        from: "noreply.voting@crackhester.cc",
         to: email,
         subject: "Confirm your email to vote in the Crackchester AGM",
         generateTextFromHTML: true,

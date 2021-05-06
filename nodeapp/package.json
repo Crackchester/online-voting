@@ -1,5 +1,5 @@
 {
-  "name": "caos-online-voting",
+  "name": "crackchester-online-voting",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ryanharrison554/caos_online_voting.git"
+    "url": "git+https://github.com/Crackchester/online-voting.git"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
