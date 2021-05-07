@@ -50,6 +50,7 @@ services:
             - ${PWD}/nodeapp:/app
         networks:
             proxy-bridge-internal: {}
+            proxy-bridge-external: {}
         ports:
             - 3000:3000
         depends_on: 
