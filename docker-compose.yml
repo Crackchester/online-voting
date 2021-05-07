@@ -17,30 +17,6 @@ services:
             proxy-bridge-external: {}
             proxy-bridge-internal: {}
 
-    email:
-        image: freinet/postfix-relay
-        restart: always
-        container_name: postfix
-        ports:
-            - "25:25"
-        environment:
-            - MAILNAME=crackchester.cc
-            - USE_TLS=yes
-            - TLS_SECURITY_LEVEL=encrypt
-            - TLS_KEY=/certs/cert.key
-            - TLS_CRT=/certs/cert.crt
-            - USE_DKIM=yes
-            - DKIM_DOMAINS=crackchester.cc
-        volumes:
-            - /etc/letsencrypt/live/crackchester.cc/fullchain.pem:/certs/cert.crt:ro
-            - /etc/letsencrypt/live/crackchester.cc/privkey.pem:/certs/cert.key:ro
-            - ${PWD}/../dkim-keys/mail.private:/etc/opendkim/dkim.key
-        networks:
-            - proxy-bridge-internal
-            - proxy-bridge-external
-        labels:
-            - traefik.enable=false
-
     web:
         build: ${PWD}/nodeapp
         image: online-voting:latest
@@ -53,8 +29,6 @@ services:
             proxy-bridge-external: {}
         ports:
             - 3000:3000
-        depends_on: 
-            - email
         labels:
             - traefik.http.services.web.loadbalancer.server.port=3000
             - traefik.http.routers.web.rule=Host(`elections.crackchester.cc`) || Host(`localhost`)

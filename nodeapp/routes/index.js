@@ -8,6 +8,7 @@ const Vote = require('../models/Vote');
 const Voter = require('../models/Voter');
 const positions = require('../models/positions');
 const {ensureUUIDValid, forwardAuthenticated} = require('../config/auth');
+const {smtpAuth} = require('../config/keys');
 const nodemailer = require('nodemailer');
 
 router.get('/', forwardAuthenticated, (req, res) => {
@@ -163,8 +164,8 @@ router.post('/register', forwardAuthenticated, (req, res, next) => {
             if (!validator.isEmail(email)) {
                 res.render('/register', {err: 'Enter a valid UoM student email address'});
             } else if (
-                !RegExp('^[a-zA-Z]+\.[a-zA-Z0-9._%+-]+@student\.manchester\.ac\.uk$').test(email) &&
-                !RegExp('^[a-zA-Z]+\.[a-zA-Z0-9._%+-]+@student\.manchester\.ac\.uk$').test(email)
+                !RegExp('^[a-zA-Z]+\.[a-zA-Z]+@student\.manchester\.ac\.uk$').test(email) &&
+                !RegExp('^[a-zA-Z]+\.[a-zA-Z]+@student\.manchester\.ac\.uk$').test(email)
             ) {
                 res.render('register', {err: 'Enter a valid UoM student email address'});
             } else {
@@ -241,9 +242,8 @@ router.get('/confirmEmail/:UUID', forwardAuthenticated, (req, res) => {
 
 let sendEmail = (email, voter, hostname) => {
     const smtpTransport = nodemailer.createTransport({
-        host: "postfix",
-        port: 25,
-        secure: false
+        host: "email-smtp.eu-west-2.amazonaws.com",
+	auth: smtpAuth
     });
 
     smtpTransport.verify(function(error, success) {
@@ -254,7 +254,7 @@ let sendEmail = (email, voter, hostname) => {
         }
       });
     const emailOptions = {
-        from: "noreply.voting@crackhester.cc",
+        from: "noreply.voting@crackchester.cc",
         to: email,
         subject: "Confirm your email to vote in the Crackchester AGM",
         generateTextFromHTML: true,
