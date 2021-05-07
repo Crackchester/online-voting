@@ -165,7 +165,7 @@ router.post('/register', forwardAuthenticated, (req, res, next) => {
                 res.render('/register', {err: 'Enter a valid UoM student email address'});
             } else if (
                 !RegExp('^[a-zA-Z]+\.[a-zA-Z]+@student\.manchester\.ac\.uk$').test(email) &&
-                !RegExp('^[a-zA-Z]+\.[a-zA-Z]+@student\.manchester\.ac\.uk$').test(email)
+                !RegExp('^[a-zA-Z]+\.[a-zA-Z]+@postgrad\.manchester\.ac\.uk$').test(email)
             ) {
                 res.render('register', {err: 'Enter a valid UoM student email address'});
             } else {
