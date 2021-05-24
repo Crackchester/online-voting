@@ -2,27 +2,14 @@ const express = require('express');
 const router = express.Router();
 const validator = require('validator');
 const crypto = require('crypto');
-const uuid = require('uuid/v4');
+const {v4: uuid} = require('uuid');
 const Candidate = require('../models/Candidate');
 const Vote = require('../models/Vote');
 const Voter = require('../models/Voter');
 const positions = require('../models/positions');
 const {ensureUUIDValid, forwardAuthenticated} = require('../config/auth');
-const createError = require('http-errors');
-const emailClientID = process.env.emailClientID || require('../config/keys').emailClientID;
-const emailClientSecret = process.env.emailClientSecret || require('../config/keys').emailClientSecret;
-const emailRefreshToken = process.env.emailRefreshToken || require('../config/keys').emailRefreshToken;
+const {smtpAuth} = require('../config/keys');
 const nodemailer = require('nodemailer');
-const { google } = require('googleapis');
-const OAuth2 = google.auth.OAuth2;
-const oauth2Client = new OAuth2(
-    emailClientID,
-    emailClientSecret,
-    "https://developers.google.com/oauthplayground"
-);
-oauth2Client.setCredentials({
-    refresh_token: emailRefreshToken,
-});
 
 router.get('/', forwardAuthenticated, (req, res) => {
     res.redirect('/register');
@@ -47,7 +34,10 @@ router.get('/vote/:UUID', ensureUUIDValid, (req, res) => {
 router.get('/vote/:UUID/:position', ensureUUIDValid, (req, res, next) => {
     // Does position exist
     if (!positions.includes(req.params.position)) {
-        next(createError(404));
+        next({
+            message: "Could not find the resource you were looking for",
+            status: 404
+          });
         return
     }
     let alreadyVotedOn = '';
@@ -76,7 +66,10 @@ router.get('/vote/:UUID/:position/:candidate', ensureUUIDValid, (req, res, next)
                 if (err) {
                     console.error(`Error at GET /vote/${req.params.UUID}/${req.params.position}/${req.params.candidate}:`);
                     console.error(err);
-                    next(createError(500));
+                    next({
+                        message: "Something went wrong... see logs",
+                        status: 500
+                    });
                 } else if (results.n === 0) {
                     // Create new vote and save
                     let newVote = new Vote({
@@ -86,7 +79,10 @@ router.get('/vote/:UUID/:position/:candidate', ensureUUIDValid, (req, res, next)
                     });
                     newVote.save(err => {
                         if (err) {
-                            next(createError(500));
+                            next({
+                                message: "Something went wrong... see logs",
+                                status: 500
+                            });
                         } else
                             res.render('voted', {candidate, position: req.params.position});
                     });
@@ -94,7 +90,10 @@ router.get('/vote/:UUID/:position/:candidate', ensureUUIDValid, (req, res, next)
                     res.render('voted', {candidate, position: req.params.position});
             });
         } else {
-            next(createError(404));
+            next({
+                message: "Could not find the resource you were looking for",
+                status: 404
+              });
         }
     });
 });
@@ -107,7 +106,10 @@ router.get('/submit/:UUID', ensureUUIDValid, (req, res, next) => {
         if (err || !votes) {
             console.error(`Error at GET /submit/${req.params.UUID}:`);
             console.error(err);
-            next(createError(500));
+            next({
+                message: "Something went wrong... see logs",
+                status: 500
+            });
         } else if (votes.length < positions.length) {
             let alreadyVotedOn = [];
             for (let i = 0; i < votes.length; i++) {
@@ -118,7 +120,10 @@ router.get('/submit/:UUID', ensureUUIDValid, (req, res, next) => {
             // If they have submitted all votes then mark as submitted
             Voter.updateOne({uuid: req.params.UUID}, {votesConfirmed: true}, err => {
                 if (err) {
-                    next(createError(500));
+                    next({
+                        message: "Something went wrong... see logs",
+                        status: 500
+                    });
                 } else
                     res.render('submitSuccessful');
             });
@@ -159,8 +164,8 @@ router.post('/register', forwardAuthenticated, (req, res, next) => {
             if (!validator.isEmail(email)) {
                 res.render('/register', {err: 'Enter a valid UoM student email address'});
             } else if (
-                !RegExp('^[a-zA-Z]+\.[a-zA-Z0-9._%+-]+@student\.manchester\.ac\.uk$').test(email) &&
-                !RegExp('^[a-zA-Z]+\.[a-zA-Z0-9._%+-]+@student\.manchester\.ac\.uk$').test(email)
+                !RegExp('^[a-zA-Z]+\.[a-zA-Z0-9-]+@student\.manchester\.ac\.uk$').test(email) &&
+                !RegExp('^[a-zA-Z]+\.[a-zA-Z0-9-]+@postgrad\.manchester\.ac\.uk$').test(email)
             ) {
                 res.render('register', {err: 'Enter a valid UoM student email address'});
             } else {
@@ -236,20 +241,20 @@ router.get('/confirmEmail/:UUID', forwardAuthenticated, (req, res) => {
 
 
 let sendEmail = (email, voter, hostname) => {
-    const accessToken = oauth2Client.getAccessToken();
     const smtpTransport = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-            type: "OAuth2",
-            user: "crackchestermcr@gmail.com",
-            clientId: emailClientID,
-            clientSecret: emailClientSecret,
-            refreshToken: emailRefreshToken,
-            accessToken
-        }
+        host: "email-smtp.eu-west-2.amazonaws.com",
+	auth: smtpAuth
     });
+
+    smtpTransport.verify(function(error, success) {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Email server is ready to take our messages");
+        }
+      });
     const emailOptions = {
-        from: "crackchestermcr@gmail.com",
+        from: "noreply.voting@crackchester.cc",
         to: email,
         subject: "Confirm your email to vote in the Crackchester AGM",
         generateTextFromHTML: true,

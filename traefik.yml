@@ -1,0 +1,17 @@
+providers:
+  docker:
+    network: proxy-bridge-internal
+  file:
+    filename: /etc/traefik/traefik-dynamic.yml
+    watch: true
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: ":443"
